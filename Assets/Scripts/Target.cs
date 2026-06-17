@@ -2,39 +2,55 @@ using UnityEngine;
 
 public class Target : MonoBehaviour
 {
-    private Rigidbody targetRb;
-    private float minSpeed=12;
-    private float maxSpeed=16;
-    private float maxTorque=10;
-    private float xRange=4;
-    private float ySpawnPos=-6;
+    private Rigidbody RB;
+    private GameManager Manager;
+    [SerializeField] private ParticleSystem Explosion;
+    [SerializeField] private int ScoreValue;
 
-    void Start()
+    private readonly float MaxSpd = 16f;
+    private readonly float MinSpd = 12f;
+    private readonly float MaxTorque = 10f;
+    private readonly float xRange = 4f;
+    private readonly float SpawnPosY = -6f;
+
+    private void Start()
     {
-        targetRb=GetComponent<Rigidbody>();
-        targetRb.AddForce(RandomForce (),ForceMode.Impulse);
-        targetRb.AddTorque(RandomTorque(), RandomTorque(), RandomTorque(), ForceMode.Impulse);
+        RB = GetComponent<Rigidbody>();
+
+        RB.AddForce(RandomForce(), ForceMode.Impulse);
+        RB.AddTorque(RandomTorque(), RandomTorque(), RandomTorque(), ForceMode.Impulse);
         transform.position = RandomSpawnPos();
-    }
-    
-    Vector3 RandomForce()
-    {
-        return Vector3.up * Random.Range(minSpeed, maxSpeed);
+
+        Manager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    float RandomTorque()
+    private Vector3 RandomForce()
     {
-        return Random.Range(-maxTorque, maxTorque);
+        return Vector3.up * Random.Range(MinSpd, MaxSpd);
     }
 
-    Vector3 RandomSpawnPos()
+    private float RandomTorque()
     {
-        return new Vector3(Random.Range(-xRange, xRange), ySpawnPos);
+        return Random.Range(-MaxTorque, MaxTorque);
     }
 
-
-    void Update()
+    private Vector3 RandomSpawnPos()
     {
-        
+        return new Vector3(Random.Range(-xRange, xRange), SpawnPosY);
     }
+
+    private void OnMouseDown()
+    {
+        if (Manager.IsGameActive == false) return;
+        Manager.UpdateScore(ScoreValue);
+        Instantiate(Explosion, transform.position, Explosion.transform.rotation);
+        if (gameObject.CompareTag("Bad")) Manager.GameOver();
+        Destroy(gameObject);
+    }
+
+    /*private void OnTriggerEnter(Collider other)
+    {
+        if (gameObject.CompareTag("Bad")) Manager.GameOver();
+        Destroy(gameObject);
+    }*/
 }
